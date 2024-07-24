@@ -12,25 +12,21 @@ jobs:
           echo "SFDX_DISABLE_SOURCE_MEMBER_POLLING=true" >> $GITHUB_ENV
           echo "SFDX_DISABLE_TELEMETRY=true" >> $GITHUB_ENV
 
-      - name: Install sfdx and connect to DevHub
-        run: |
-          npm install --global sfdx-cli@${{ vars.SFDX_VERSION }}
-          echo ${{ secrets.DEVHUB_URL }} > sfdx_auth
-          sfdx force:auth:sfdxurl:store --sfdxurlfile sfdx_auth --setdefaultdevhubusername --setalias hub
-          sfdx config:set defaultdevhubusername=hub --global
+      - name: Install sf CLI and connect to Dev Hub
+        run:  npm run org:scratch:init
 
       - name: Checkout
         uses: actions/checkout@v3
 
       - name: Create scratch org
-        run: sfdx force:org:create --nonamespace --definitionfile config/project-scratch-def.json --setalias scratch-org --setdefaultusername --durationdays 1
+        run: npm run org:scratch:create
 
-      - name: Push source to scratch org
-        run: sfdx force:source:push
+      - name: Push source
+        run: npm run org:scratch:deploy 
 
       - name: Run Apex tests
         run: npm run test
 
       - name: Delete scratch org
         if: always()
-        run: sfdx force:org:delete --noprompt
+        run: npm run org:scratch:delete 

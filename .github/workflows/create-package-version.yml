@@ -27,11 +27,7 @@ jobs:
           echo "SFDX_PROJECT_AUTOUPDATE_DISABLE_FOR_PACKAGE_VERSION_CREATE=true" >> $GITHUB_ENV
 
       - name: Install sfdx and connect to DevHub
-        run: |
-          npm install --global sfdx-cli@${{ vars.SFDX_VERSION }}
-          echo ${{ secrets.DEVHUB_URL }} > sfdx_auth
-          sfdx force:auth:sfdxurl:store --sfdxurlfile sfdx_auth --setdefaultdevhubusername --setalias hub
-          sfdx config:set defaultdevhubusername=hub --global
+        run:  npm run scratch:init
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -39,6 +35,6 @@ jobs:
       - name: Create package version
         id: create
         run: |
-          packageId=$(sfdx force:package:version:create --definitionfile config/project-scratch-def.json --package "${{ inputs.packageAlias }}" --branch "${{ inputs.branch }}" --tag ${{ github.sha }} --wait 120 --codecoverage --skipancestorcheck --installationkeybypass --json | jq -e -r ".result.SubscriberPackageVersionId")
+          packageId=$(sf package version create --definition-file config/project-scratch-def.json --package "${{ inputs.packageAlias }}" --branch "${{ inputs.branch }}" --tag ${{ github.sha }} --wait 120 --code-coverage --skip-ancestor-check --installation-key-bypass --json | jq -e -r ".result.SubscriberPackageVersionId")
           echo "packageId=$packageId" >> $GITHUB_ENV
           echo "packageId=$packageId" >> $GITHUB_OUTPUT

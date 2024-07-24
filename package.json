@@ -11,14 +11,21 @@
   ],
   "scripts": {
     "lint": "npm run lint:apex ; npm run lint:doc",
-    "lint:apex": "sfdx scanner:run -v -t 'force-app/**/*.cls' -f table -c 'apex-mockery' -e pmd",
+    "lint:init": "sf plugins install @salesforce/sfdx-scanner"
+    "lint:apex": "sf scanner run -v -t 'force-app/**/*.cls' -f table -c 'apex-mockery' -e pmd",
     "lint:doc": "write-good README.md --parse",
     "postinstall": "husky install ; ./postInstall.sh",
     "prettier": "prettier --write \"**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}\"",
     "prettier:verify": "prettier --list-different \"**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}\"",
     "precommit": "lint-staged",
     "prepush": "npm run test && npm run lint",
-    "test": "sfdx force:apex:test:run -r human -d ./tests/apex -l RunLocalTests -w 20"
+    "sf:init": "npm install --global sf",
+    "org:devhub:init": "npm run sf:init ; echo ${{ secrets.DEVHUB_URL }} > sfdx_auth ; sf org login sfdx-url --sfdx-url-file sfdx_auth --set-default-dev-hub --alias hub ; sf config set target-dev-hub hub --global",
+    "org:scratch:init": "npm run org:devhub:init",
+    "org:scratch:create": "sf org create scratch --no-namespace --definition-file config/project-scratch-def.json --alias scratch-org --set-default --duration-days 1",
+    "org:scratch:deploy": "sf project deploy start",
+    "org:scratch:delete": "sf org delete scratch --no-prompt",
+    "test": "sf apex test run -r human -d ./tests/apex -l RunLocalTests -w 20"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.3.0",
